@@ -1,9 +1,9 @@
 # KiddoTrack-Lite Unit Test Assignment
 
 **Course:** CISC 593 - Software Verification & Validation  
-**Institution:** University of Delaware  
+**Institution:** Harrisburg University  
 **Assignment:** Individual Unit Test Reports by Team Member  
-**Date:** December 16, 2024
+**Date:** June 11, 2025
 
 ---
 
@@ -250,8 +250,8 @@ Each individual unit test report contains all required sections:
 - Clear scope definition for each module
 
 ### ✅ **Date**  
-- Unit test execution date: December 16, 2024
-- Report generation date: December 16, 2024
+- Unit test execution date: June 11, 2025
+- Report generation date: June 11, 2025
 - Test suite version: 1.0.0
 
 ### ✅ **Engineers**
@@ -331,9 +331,9 @@ Each individual unit test report contains all required sections:
 
 **Course Information:**
 - **Course:** CISC 593 - Software Verification & Validation
-- **Institution:** University of Delaware  
-- **Semester:** Fall 2024
-- **Submission Date:** December 16, 2024
+- **Institution:** Harrisburg University  
+- **Semester:** Summer 2025
+- **Submission Date:** June 11, 2025
 
 ---
 

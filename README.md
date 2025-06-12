@@ -9,7 +9,7 @@
 
 **Authors:** Isit Pokharel, Bhushan Chandrakant, Pooja Poudel  
 **Course:** CISC 593 — Software Verification & Validation  
-**Institution:** University of Delaware
+**Institution:** Harrisburg University
 
 ---
 
@@ -529,7 +529,7 @@ Response:
 {
   "latitude": 40.7128,
   "longitude": -74.0060,
-  "timestamp": "2024-12-16T10:30:00Z"
+  "timestamp": "2025-06-11T10:30:00Z"
 }
 ```
 
@@ -542,7 +542,7 @@ Content-Type: application/json
   "device_id": "child_device_001",
   "latitude": 40.7128,
   "longitude": -74.0060,
-  "timestamp": "2024-12-16T10:30:00Z"
+  "timestamp": "2025-06-11T10:30:00Z"
 }
 
 Response:
@@ -582,7 +582,7 @@ POST /panic
 Response:
 {
   "status": "panic_triggered",
-  "timestamp": "2024-12-16T10:30:00Z",
+  "timestamp": "2025-06-11T10:30:00Z",
   "alert_id": "alert_001"
 }
 ```
@@ -607,7 +607,7 @@ ws.onmessage = function(event) {
   "data": {
     "latitude": 40.7128,
     "longitude": -74.0060,
-    "timestamp": "2024-12-16T10:30:00Z"
+    "timestamp": "2025-06-11T10:30:00Z"
   }
 }
 
@@ -759,8 +759,8 @@ KiddoTrack-Lite/
 
 ### 🎓 Academic Information
 - **Course:** CISC 593 - Software Verification & Validation
-- **Institution:** University of Delaware
-- **Semester:** Fall 2024
+- **Institution:** Harrisburg University
+- **Semester:** Summer 2025
 
 ### 👥 Development Team
 - **Isit Pokharel** - Geofencing & Spatial Calculations
@@ -771,8 +771,8 @@ KiddoTrack-Lite/
 ### 📋 Project Status
 - **Current Version:** 1.0.0
 - **Status:** Production Ready
-- **Last Updated:** December 16, 2024
-- **Next Review:** January 2, 2025
+- **Last Updated:** June 11, 2025
+- **Next Review:** August 11, 2025
 
 ### 🔗 Resources
 - **Test Reports:** [Unit Test Summary](./Unit_Test_Summary_Report.md)
