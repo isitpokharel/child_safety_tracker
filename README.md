@@ -7,7 +7,7 @@
 
 **A comprehensive Python-based child safety monitoring system designed for software verification & validation (V&V)**
 
-**Authors:** Vivek Venkatesan, Isit Pokharel, Bhushan Chandrakant, Pooja Poudel  
+**Authors:** Isit Pokharel, Bhushan Chandrakant, Pooja Poudel  
 **Course:** CISC 593 — Software Verification & Validation  
 **Institution:** University of Delaware
 
@@ -125,7 +125,7 @@ graph TB
 ## 3. Module Functionalities
 
 ### 📍 Geofence Module (`geofence.py`)
-**Author:** Vivek Venkatesan  
+**Author:** Isit Pokharel  
 **Purpose:** Spatial boundary monitoring and distance calculations
 
 #### Core Components
@@ -763,7 +763,7 @@ KiddoTrack-Lite/
 - **Semester:** Fall 2024
 
 ### 👥 Development Team
-- **Vivek Venkatesan** - Geofencing & Spatial Calculations
+- **Isit Pokharel** - Geofencing & Spatial Calculations
 - **Isit Pokharel** - GPS Simulation & State Management  
 - **Bhushan Chandrakant** - API Development & WebSocket
 - **Pooja Poudel** - Audit Logging & Data Management

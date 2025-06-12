@@ -24,7 +24,7 @@ This assignment demonstrates comprehensive unit testing for the KiddoTrack-Lite 
 
 ## 👥 Team Member Responsibilities
 
-### **Vivek Venkatesan** - Geofencing & Spatial Calculations
+### **Isit Pokharel** - Geofencing & Spatial Calculations
 - **Module:** `geofence.py`
 - **Features Tested:**
   - GPS coordinate validation and boundary checks
@@ -80,7 +80,7 @@ This assignment demonstrates comprehensive unit testing for the KiddoTrack-Lite 
 
 Each report follows the standardized format: `assignment__[team_member]_[module]_module.md`
 
-### 1. [Vivek Venkatesan - Geofence Module](assignment__vivek_venkatesan_geofence_module.md)
+### 1. [Isit Pokharel - Geofence Module](assignment__isit_pokharel_geofence_module.md)
 **Unit:** `geofence.py` - Spatial boundary calculations  
 **Key Testing Focus:** GPS precision, boundary detection, distance calculations  
 **Methodology:** Boundary Value Analysis - critical for safety boundaries  
@@ -116,7 +116,7 @@ Each report follows the standardized format: `assignment__[team_member]_[module]
 
 | Module | Engineer | Test Cases | Passed | Success Rate | Status |
 |--------|----------|------------|--------|--------------|---------|
-| **Geofence** | Vivek Venkatesan | 22 | 19 | 86.4% | ✅ Production Ready |
+| **Geofence** | Isit Pokharel | 22 | 19 | 86.4% | ✅ Production Ready |
 | **Simulator** | Isit Pokharel | 37 | 36 | 97.3% | ✅ Production Ready |
 | **API** | Bhushan Chandrakant | 45+ | Expected 95%+ | 95%+ | ✅ Production Ready |
 | **Logger** | Pooja Poudel | 37 | Enhanced Impl. | 100%* | ✅ Production Ready |
@@ -324,7 +324,7 @@ Each individual unit test report contains all required sections:
 ## 📞 Contact Information
 
 **Primary Development Team:**
-- **Vivek Venkatesan** - Geofencing & Spatial Calculations
+- **Isit Pokharel** - Geofencing & Spatial Calculations
 - **Isit Pokharel** - GPS Simulation & State Management  
 - **Bhushan Chandrakant** - API Development & WebSocket Communication
 - **Pooja Poudel** - Audit Logging & Data Management

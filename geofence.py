@@ -1,6 +1,6 @@
 """
 Geofence Module - Distance math & boundary checks
-Author: Vivek Venkatesan
+Author: Isit Pokharel
 Purpose: Pure-Python geometry check for circular safe zones
 """
 

@@ -1,6 +1,6 @@
 """
 Unit Tests for Geofence Module
-Author: Vivek Venkatesan
+Author: Isit Pokharel
 Purpose: Equivalence partitioning + boundary value testing for geofence calculations
 """
 

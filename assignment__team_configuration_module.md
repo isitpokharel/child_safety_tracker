@@ -37,7 +37,7 @@
 ## Engineers
 
 **Primary Engineers:** Entire CISC 593 Development Team  
-- **Vivek Venkatesan** - Geofence configuration validation
+- **Isit Pokharel** - Geofence configuration validation
 - **Isit Pokharel** - Simulator configuration testing
 - **Bhushan Chandrakant** - API configuration verification
 - **Pooja Poudel** - Logger configuration validation
