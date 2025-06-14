@@ -176,14 +176,14 @@ class GPSSimulator:
         if self.emergency_state == EmergencyState.NORMAL:
             self.emergency_state = EmergencyState.PANIC
             self._notify_emergency_callbacks(self.emergency_state)
-            print("🚨 PANIC TRIGGERED! 🚨")
+            print("!!! PANIC TRIGGERED !!!")
     
     def resolve_panic(self):
         """Resolve panic state."""
         if self.emergency_state == EmergencyState.PANIC:
             self.emergency_state = EmergencyState.RESOLVED
             self._notify_emergency_callbacks(self.emergency_state)
-            print("✅ Panic resolved")
+            print("Panic resolved")
             # Reset to normal after a short delay
             threading.Timer(2.0, self._reset_to_normal).start()
     
@@ -191,7 +191,7 @@ class GPSSimulator:
         """Reset emergency state to normal."""
         self.emergency_state = EmergencyState.NORMAL
         self._notify_emergency_callbacks(self.emergency_state)
-        print("🔄 Back to normal state")
+        print("Back to normal state")
     
     def get_current_location(self) -> Location:
         """Get the current simulated location."""

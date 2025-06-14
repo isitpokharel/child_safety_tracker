@@ -154,7 +154,7 @@ class ChildSimulator:
                 # Prevent spam - only alert every 30 seconds
                 current_time = time.time()
                 if current_time - self.last_alert_time > 30:
-                    self.console.print(f"[yellow]⚠️  Left safe zone! Distance: {distance:.1f}m[/yellow]")
+                    self.console.print(f"[yellow]WARNING: Left safe zone! Distance: {distance:.1f}m[/yellow]")
                     self.last_alert_time = current_time
     
     def _on_emergency_update(self, state: EmergencyState):
@@ -162,18 +162,18 @@ class ChildSimulator:
         self.emergency_state = state
         
         if state == EmergencyState.PANIC:
-            self.console.print("[bold red]🚨 PANIC TRIGGERED! 🚨[/bold red]")
+            self.console.print("[bold red]!!! PANIC TRIGGERED !!![/bold red]")
         elif state == EmergencyState.RESOLVED:
-            self.console.print("[bold green]✅ Panic resolved[/bold green]")
+            self.console.print("[bold green]Panic resolved[/bold green]")
         elif state == EmergencyState.NORMAL:
-            self.console.print("[green]🔄 Back to normal state[/green]")
+            self.console.print("[green]Back to normal state[/green]")
     
     async def trigger_panic(self):
         """Manually trigger panic state."""
         try:
             response = await self.client.post(f"{self.api_url}/panic")
             if response.status_code == 200:
-                self.console.print("[bold red]🚨 Manual panic triggered![/bold red]")
+                self.console.print("[bold red]Manual panic triggered![/bold red]")
             else:
                 self.console.print(f"[red]Failed to trigger panic: {response.status_code}[/red]")
         except Exception as e:
@@ -184,7 +184,7 @@ class ChildSimulator:
         try:
             response = await self.client.post(f"{self.api_url}/panic/resolve")
             if response.status_code == 200:
-                self.console.print("[bold green]✅ Manual panic resolution![/bold green]")
+                self.console.print("[bold green]Manual panic resolution![/bold green]")
             else:
                 self.console.print(f"[red]Failed to resolve panic: {response.status_code}[/red]")
         except Exception as e:
@@ -232,11 +232,11 @@ class ChildSimulator:
         
         # Emergency indicator
         if self.emergency_state == EmergencyState.PANIC:
-            emergency_text = Text("🚨 EMERGENCY - PANIC ACTIVE 🚨", style="bold red on white")
+            emergency_text = Text("!!! EMERGENCY - PANIC ACTIVE !!!", style="bold red on white")
         elif self.emergency_state == EmergencyState.RESOLVED:
-            emergency_text = Text("✅ Emergency Resolved", style="bold green")
+            emergency_text = Text("Emergency Resolved", style="bold green")
         else:
-            emergency_text = Text("🟢 Normal Operation", style="bold green")
+            emergency_text = Text("Normal Operation", style="bold green")
         
         content = Align.center(
             title + "\n" + subtitle + "\n" + emergency_text
@@ -260,7 +260,7 @@ class ChildSimulator:
         # Add geofence status
         if self.geofence:
             is_safe, distance = check_location_safety(self.current_location, self.geofence)
-            status_icon = "🟢" if is_safe else "🔴"
+            status_icon = "[SAFE]" if is_safe else "[ALERT]"
             status_text = "Safe" if is_safe else f"Outside ({distance:.0f}m)"
             table.add_row("Geofence", f"{status_icon} {status_text}")
         else:
@@ -275,20 +275,20 @@ class ChildSimulator:
         table.add_column("Value")
         
         # GPS Status
-        gps_status = "🟢 Active" if self.simulator._running else "🔴 Inactive"
+        gps_status = "[ACTIVE]" if self.simulator._running else "[INACTIVE]"
         table.add_row("GPS Status", gps_status)
         
         # Emergency State
         emergency_icon = {
-            EmergencyState.NORMAL: "🟢",
-            EmergencyState.PANIC: "🔴",
-            EmergencyState.RESOLVED: "🟡"
-        }.get(self.emergency_state, "❓")
+            EmergencyState.NORMAL: "[NORMAL]",
+            EmergencyState.PANIC: "[PANIC]",
+            EmergencyState.RESOLVED: "[RESOLVED]"
+        }.get(self.emergency_state, "[UNKNOWN]")
         
         table.add_row("Emergency", f"{emergency_icon} {self.emergency_state.value.upper()}")
         
         # Connection Status
-        connection_status = "🟢 Connected" if self.is_running else "🔴 Disconnected"
+        connection_status = "[CONNECTED]" if self.is_running else "[DISCONNECTED]"
         table.add_row("API Connection", connection_status)
         
         # Update Frequency

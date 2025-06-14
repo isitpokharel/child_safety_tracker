@@ -188,11 +188,11 @@ class ParentConsole:
         
         # Emergency indicator
         if self.emergency_state == EmergencyState.PANIC:
-            emergency_text = Text("🚨 EMERGENCY - PANIC TRIGGERED 🚨", style="bold red on white")
+            emergency_text = Text("!!! EMERGENCY - PANIC TRIGGERED !!!", style="bold red on white")
         elif self.emergency_state == EmergencyState.RESOLVED:
-            emergency_text = Text("✅ Emergency Resolved", style="bold green")
+            emergency_text = Text("Emergency Resolved", style="bold green")
         else:
-            emergency_text = Text("🟢 All Systems Normal", style="bold green")
+            emergency_text = Text("All Systems Normal", style="bold green")
         
         content = Align.center(
             title + "\n" + subtitle + "\n" + emergency_text
@@ -212,7 +212,7 @@ class ParentConsole:
         if self.geofence:
             center_x = map_size // 2
             center_y = map_size // 2
-            map_chars[center_y][center_x] = "🏠"
+            map_chars[center_y][center_x] = "H"
             
             # Draw geofence boundary (optimized calculation)
             radius_pixels = min(self.ui_config.geofence_display_radius, 
@@ -226,7 +226,7 @@ class ParentConsole:
             
             # Check if child is in safe zone
             is_safe, distance = check_location_safety(self.current_location, self.geofence)
-            child_icon = "👶" if is_safe else "🚨"
+            child_icon = "C" if is_safe else "!"
             
             # Ensure within bounds and place icon
             if 0 <= child_x < map_size and 0 <= child_y < map_size:
@@ -236,7 +236,7 @@ class ParentConsole:
         map_str = "\n".join("".join(row) for row in map_chars)
         
         # Add legend
-        legend = "\n\nLegend: 🏠 Home | 👶 Child (Safe) | 🚨 Child (Alert) | · Geofence"
+        legend = "\n\nLegend: H Home | C Child (Safe) | ! Child (Alert) | . Geofence"
         
         return Panel(map_str + legend, title="Location Map", border_style="green")
     
@@ -247,7 +247,7 @@ class ParentConsole:
             for x in range(map_size):
                 distance = ((x - center_x) ** 2 + (y - center_y) ** 2) ** 0.5
                 if abs(distance - radius_pixels) < 1:
-                    map_chars[y][x] = "·"
+                    map_chars[y][x] = "."
     
     def _calculate_child_position(self, map_size: int) -> tuple[int, int]:
         """Calculate child position on the map using configuration scale factor."""
@@ -280,7 +280,7 @@ class ParentConsole:
             
             if self.geofence:
                 is_safe, distance = check_location_safety(self.current_location, self.geofence)
-                status_icon = "🟢" if is_safe else "🔴"
+                status_icon = "[SAFE]" if is_safe else "[ALERT]"
                 status_text = "Safe" if is_safe else f"Outside ({distance:.0f}m)"
                 table.add_row("Status", f"{status_icon} {status_text}")
         else:

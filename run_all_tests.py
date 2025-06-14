@@ -111,7 +111,7 @@ def generate_summary_report(results):
 """
     
     for module, result in results.items():
-        status = "✅ PASSED" if result['success'] else "❌ FAILED"
+        status = "PASSED" if result['success'] else "FAILED"
         markdown_report += f"### {module}\n"
         markdown_report += f"**Status:** {status}\n"
         markdown_report += f"**Exit Code:** {result['returncode']}\n"
