@@ -8,7 +8,7 @@
 **A comprehensive Python-based child safety monitoring system designed for software verification & validation (V&V)**
 
 **Course:** CISC 593 — Software Verification & Validation  
-**Institution:** Harrisburg University  
+**Institution:** Harrisburg University
 **Team:** Isit Pokharel, Bhushan Chandrakant, Pooja Poudel  
 **Date:** June 13, 2025
 

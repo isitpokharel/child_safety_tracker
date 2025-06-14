@@ -3,7 +3,7 @@
 **Project:** KiddoTrack-Lite Child Safety Monitoring System  
 **Course:** CISC 593 - Software Verification & Validation  
 **Team:** Isit Pokharel, Bhushan Chandrakant, Pooja Poudel  
-**Date:** June 11, 2025  
+**Date:** June 13, 2025  
 **Version:** 1.0
 
 ---
