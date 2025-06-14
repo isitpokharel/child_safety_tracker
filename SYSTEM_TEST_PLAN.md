@@ -29,15 +29,248 @@ KiddoTrack-Lite consists of:
 
 ---
 
-## 2. Test Strategy
+## 2. Software Requirements and Development Environment
 
-### 2.1 Testing Approach
+### 2.1 Development Environment
+
+This application was developed using the following software and version numbers:
+
+#### **Core Development Stack**
+- **Python**: 3.10+ (Programming Language)
+- **FastAPI**: 0.111.0 (Modern web framework for building APIs)
+- **uvicorn**: 0.30.0 (Lightning-fast ASGI server implementation)
+- **Rich**: 13.7.0 (Python library for rich text and terminal formatting)
+- **Shapely**: 2.0.2 (Manipulation and analysis of geometric objects)
+- **WebSockets**: 12.0 (WebSocket client and server implementation)
+
+#### **Development Tools**
+- **Git**: Version control system
+- **pip**: Python package installer
+- **Virtual Environment**: Python virtual environment manager
+
+### 2.2 Testing Environment
+
+The application testing was performed using the following software:
+
+#### **Testing Framework**
+- **pytest**: 8.0.0 (Python testing framework)
+- **coverage**: 7.4.0 (Code coverage measurement)
+- **httpx**: 0.27.0 (HTTP client library for testing API endpoints)
+
+#### **Testing Tools**
+- **unittest**: Built-in Python testing framework (used alongside pytest)
+- **Mock**: Built-in Python mocking library for unit tests
+
+### 2.3 System Requirements
+
+#### **Operating System**
+- **Primary Development OS**: macOS 14.5.0 (Darwin 24.5.0)
+- **Supported OS**: Windows 10+, macOS 10.15+, Linux (Ubuntu 20.04+)
+
+#### **Hardware Requirements**
+- **RAM**: Minimum 4GB, Recommended 8GB+
+- **Storage**: Minimum 500MB free space
+- **CPU**: Any modern 64-bit processor
+
+---
+
+## 3. System Architecture
+
+### 3.1 Architecture Diagram
+
+```mermaid
+graph TB
+    %% User Interfaces
+    Parent[("Parent Console<br/>parent_console.py")]
+    Child[("Child Simulator<br/>child_simulator.py")]
+    
+    %% Core API Layer
+    API[("FastAPI Server<br/>api.py")]
+    
+    %% Core Modules
+    Simulator[("GPS Simulator<br/>simulator.py")]
+    Geofence[("Geofencing Engine<br/>geofence.py")]
+    Logger[("Audit Logger<br/>logger.py")]
+    Config[("Configuration<br/>config.py")]
+    
+    %% Data Storage
+    AuditLog[("Audit Log<br/>data/audit_log.jsonl")]
+    
+    %% External Connections
+    WS[("WebSocket<br/>Real-time Updates")]
+    REST[("REST API<br/>HTTP Endpoints")]
+    
+    %% Connections
+    Parent -.->|WebSocket| WS
+    Parent -->|REST Calls| REST
+    Child -->|REST Calls| REST
+    
+    WS -->|Real-time| API
+    REST -->|HTTP| API
+    
+    API -->|Location Updates| Simulator
+    API -->|Boundary Checks| Geofence
+    API -->|Event Logging| Logger
+    API -->|Settings| Config
+    
+    Simulator -->|GPS Data| API
+    Simulator -->|Emergency States| API
+    
+    Geofence -->|Safety Status| API
+    Geofence -->|Distance Calc| API
+    
+    Logger -->|Audit Trail| AuditLog
+    Logger -->|Event Storage| AuditLog
+    
+    Config -->|App Settings| API
+    Config -->|Module Config| Simulator
+    Config -->|Module Config| Logger
+```
+
+### 3.2 Data Flow
+1. **Child Device** → Simulates GPS coordinates and emergency states
+2. **API Server** → Processes location updates and checks geofence boundaries  
+3. **Geofence Engine** → Validates safety boundaries using Haversine distance
+4. **Audit Logger** → Records all events in structured JSONL format
+5. **Parent Console** → Receives real-time updates via WebSocket
+6. **Configuration System** → Manages settings across all modules
+
+### 3.3 Component Integration Points
+- **REST API Endpoints**: HTTP-based communication for configuration and commands
+- **WebSocket Connections**: Real-time data streaming for location updates and alerts
+- **Event Callbacks**: Asynchronous notification system for state changes
+- **Shared Configuration**: Centralized settings management across modules
+- **Data Persistence**: JSONL audit log for compliance and analysis
+
+---
+
+## 4. Test Environment Setup
+
+### 4.1 Prerequisites Installation
+
+#### **Install Python 3.10+**
+```bash
+# macOS (using Homebrew)
+brew install python@3.10
+
+# Ubuntu/Debian
+sudo apt update
+sudo apt install python3.10 python3.10-venv python3.10-pip
+
+# Windows
+# Download from https://www.python.org/downloads/
+```
+
+#### **Verify Python Installation**
+```bash
+python --version  # Should show Python 3.10.x or higher
+pip --version      # Should show pip version
+```
+
+### 4.2 Application Setup
+
+#### **Clone Repository**
+```bash
+git clone <your-repository-url>
+cd CISC593
+```
+
+#### **Create Virtual Environment**
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+
+# On Windows:
+venv\Scripts\activate
+```
+
+#### **Install Dependencies**
+```bash
+# Install all required packages
+pip install -r requirements.txt
+
+# Verify installation
+pip list
+```
+
+#### **Create Data Directory**
+```bash
+mkdir -p data
+```
+
+### 4.3 Development Environment Verification
+
+#### **Test Basic Setup**
+```bash
+# Verify all modules can be imported
+python -c "import fastapi, uvicorn, rich, pytest, coverage, httpx, shapely, websockets; print('All dependencies imported successfully')"
+```
+
+#### **Run Application Health Check**
+```bash
+# Start the API server (in one terminal)
+uvicorn api:app --reload --host 0.0.0.0 --port 8000
+
+# Test health endpoint (in another terminal)
+curl http://localhost:8000/health
+```
+
+### 4.4 Testing Environment Setup
+
+#### **Run Unit Tests**
+```bash
+# Run all tests
+python run_all_tests.py
+
+# Run specific test modules
+pytest test_config.py -v
+pytest test_geofence.py -v
+pytest test_simulator.py -v
+pytest test_logger.py -v
+pytest test_api.py -v
+```
+
+#### **Generate Test Coverage Report**
+```bash
+# Run tests with coverage
+coverage run -m pytest
+coverage report -m
+coverage html  # Generates HTML coverage report
+```
+
+#### **Test Individual Components**
+```bash
+# Test configuration module
+python -m pytest test_config.py -v
+
+# Test geofence module
+python -m pytest test_geofence.py -v
+
+# Test simulator module
+python -m pytest test_simulator.py -v
+
+# Test logger module
+python -m pytest test_logger.py -v
+
+# Test API module
+python -m pytest test_api.py -v
+```
+
+---
+
+## 5. Test Strategy
+
+### 5.1 Testing Approach
 - **Black Box Testing**: Focus on system behavior from user perspective
 - **Integration Testing**: Verify component interactions
 - **Scenario-Based Testing**: Real-world use case validation
 - **Safety Testing**: Critical path validation for child safety
 
-### 2.2 Test Types
+### 5.2 Test Types
 1. **Functional Testing**: Core feature validation
 2. **Integration Testing**: Inter-module communication
 3. **User Acceptance Testing**: Parent and child user scenarios
@@ -45,16 +278,16 @@ KiddoTrack-Lite consists of:
 5. **Compatibility Testing**: Cross-platform operation
 6. **Usability Testing**: Interface effectiveness
 
-### 2.3 Test Environment
+### 5.3 Test Environment
 - **Development Environment**: Local development setup
 - **Test Environment**: Simulated production environment
 - **Integration Environment**: Multi-component testing setup
 
 ---
 
-## 3. Use Cases and Test Scenarios
+## 6. Use Cases and Test Scenarios
 
-### 3.1 GPS Location Tracking
+### 6.1 GPS Location Tracking
 
 #### Use Case UC-001: Basic Location Monitoring
 **Actor**: Parent  
@@ -97,7 +330,7 @@ KiddoTrack-Lite consists of:
 - **Expected**: System reconnects automatically, shows connection status
 - **Priority**: Medium
 
-### 3.2 Geofencing and Safe Zone Monitoring
+### 6.2 Geofencing and Safe Zone Monitoring
 
 #### Use Case UC-002: Safe Zone Management
 **Actor**: Parent  
@@ -152,7 +385,7 @@ KiddoTrack-Lite consists of:
 - **Expected**: Consistent behavior at boundaries, no false alerts
 - **Priority**: Medium
 
-### 3.3 Emergency Alert System
+### 6.3 Emergency Alert System
 
 #### Use Case UC-003: Panic Button Functionality
 **Actor**: Child  
@@ -206,7 +439,7 @@ KiddoTrack-Lite consists of:
 - **Expected**: Emergency alert contains precise location information
 - **Priority**: High
 
-### 3.4 Parent Monitoring Console
+### 6.4 Parent Monitoring Console
 
 #### Use Case UC-004: Real-time Monitoring Interface
 **Actor**: Parent  
@@ -260,7 +493,7 @@ KiddoTrack-Lite consists of:
 - **Expected**: Status information is accurate and updates immediately
 - **Priority**: Medium
 
-### 3.5 Child Device Simulation
+### 6.5 Child Device Simulation
 
 #### Use Case UC-005: Child Device Interaction
 **Actor**: Child (simulated)  
@@ -314,7 +547,7 @@ KiddoTrack-Lite consists of:
 - **Expected**: All status indicators are accurate and current
 - **Priority**: Medium
 
-### 3.6 API Communication and Integration
+### 6.6 API Communication and Integration
 
 #### Use Case UC-006: System Component Integration
 **Actor**: System  
@@ -368,7 +601,7 @@ KiddoTrack-Lite consists of:
 - **Expected**: Data remains consistent across all components
 - **Priority**: High
 
-### 3.7 Audit Logging and Compliance
+### 6.7 Audit Logging and Compliance
 
 #### Use Case UC-007: System Event Logging
 **Actor**: System Administrator  
@@ -414,9 +647,9 @@ KiddoTrack-Lite consists of:
 
 ---
 
-## 4. Integration Test Scenarios
+## 7. Integration Test Scenarios
 
-### 4.1 End-to-End Workflow Tests
+### 7.1 End-to-End Workflow Tests
 
 #### Scenario INT-001: Complete Monitoring Session
 **Objective**: Test complete parent-child monitoring workflow
@@ -461,7 +694,7 @@ KiddoTrack-Lite consists of:
 
 **Expected Results**: System handles concurrent users correctly, no data mixing
 
-### 4.2 Safety-Critical Test Scenarios
+### 7.2 Safety-Critical Test Scenarios
 
 #### Scenario SAF-001: Emergency Response Time
 **Objective**: Verify emergency alerts meet time requirements
@@ -488,27 +721,27 @@ KiddoTrack-Lite consists of:
 
 ---
 
-## 5. Test Execution
+## 8. Test Execution
 
-### 5.1 Test Environment Setup
+### 8.1 Test Environment Setup
 1. **Development Machine**: Local testing setup
 2. **Network Configuration**: Local network with isolated components
 3. **Data Setup**: Test data for various scenarios
 4. **Monitoring Tools**: Logging and observation tools
 
-### 5.2 Test Data Requirements
+### 8.2 Test Data Requirements
 - **Location Data**: Realistic GPS coordinates
 - **Geofence Configurations**: Various safe zone sizes
 - **User Profiles**: Different parent-child relationships
 - **Emergency Scenarios**: Various emergency types
 
-### 5.3 Test Execution Schedule
+### 8.3 Test Execution Schedule
 1. **Week 1**: Functional testing of individual use cases
 2. **Week 2**: Integration testing and workflow validation
 3. **Week 3**: Safety-critical testing and performance validation
 4. **Week 4**: User acceptance testing and final validation
 
-### 5.4 Pass/Fail Criteria
+### 8.4 Pass/Fail Criteria
 
 #### Critical Tests (Must Pass)
 - Emergency alert generation and delivery
@@ -530,21 +763,99 @@ KiddoTrack-Lite consists of:
 
 ---
 
-## 6. Risk Assessment
+## 9. Development Workflow
 
-### 6.1 High Risk Areas
+### 9.1 Starting the Development Environment
+```bash
+# 1. Activate virtual environment
+source venv/bin/activate  # macOS/Linux
+# or
+venv\Scripts\activate     # Windows
+
+# 2. Start API server with auto-reload
+uvicorn api:app --reload --host 0.0.0.0 --port 8000
+
+# 3. In separate terminals, run:
+python parent_console.py    # Parent monitoring console
+python child_simulator.py   # Child device simulator
+```
+
+### 9.2 Development Best Practices
+- Always work within the virtual environment
+- Run tests before committing changes
+- Use `uvicorn --reload` for development with auto-restart
+- Check code coverage regularly
+- Follow PEP 8 style guidelines
+
+### 9.3 Testing Strategy
+- **Framework**: pytest 8.0.0
+- **Coverage Target**: 80%+ code coverage
+- **Test Types**: Unit tests, integration tests, API endpoint tests
+- **Mocking**: Using unittest.mock for external dependencies
+
+### 9.4 Coverage Analysis
+- **Tool**: coverage 7.4.0
+- **Reports**: HTML and terminal reports
+- **Metrics**: Line coverage, branch coverage, function coverage
+
+---
+
+## 10. Troubleshooting
+
+### 10.1 Common Issues
+
+#### **Python Version Issues**
+```bash
+# Check Python version
+python --version
+
+# If version is < 3.10, install correct version
+# Use pyenv or conda for version management
+```
+
+#### **Virtual Environment Issues**
+```bash
+# Recreate virtual environment
+deactivate
+rm -rf venv
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+#### **Dependency Conflicts**
+```bash
+# Clear pip cache and reinstall
+pip cache purge
+pip install --force-reinstall -r requirements.txt
+```
+
+#### **Port Already in Use**
+```bash
+# Find process using port 8000
+lsof -i :8000
+
+# Kill process or use different port
+uvicorn api:app --port 8001
+```
+
+---
+
+## 11. Risk Assessment
+
+### 11.1 High Risk Areas
 1. **Emergency Response**: Failure could compromise child safety
 2. **Location Accuracy**: Inaccurate location data reduces effectiveness
 3. **System Availability**: Downtime prevents monitoring
 4. **Alert Delivery**: Failed alerts defeat safety purpose
 
-### 6.2 Mitigation Strategies
+### 11.2 Mitigation Strategies
 1. **Redundant Testing**: Multiple test runs for critical features
 2. **Stress Testing**: Test under various load conditions
 3. **Failure Simulation**: Test component failure scenarios
 4. **User Validation**: Real user feedback on interface effectiveness
 
-### 6.3 Contingency Plans
+### 11.3 Contingency Plans
 1. **Test Failure Response**: Documented procedures for test failures
 2. **Bug Escalation**: Priority handling for critical issues
 3. **Release Criteria**: Clear go/no-go decision criteria
@@ -552,21 +863,21 @@ KiddoTrack-Lite consists of:
 
 ---
 
-## 7. Test Documentation
+## 12. Test Documentation
 
-### 7.1 Test Execution Reports
+### 12.1 Test Execution Reports
 - Test case execution status
 - Defect reports and resolution
 - Performance metrics
 - User feedback summary
 
-### 7.2 Traceability Matrix
+### 12.2 Traceability Matrix
 - Requirements to test case mapping
 - Test coverage analysis
 - Risk coverage validation
 - Compliance verification
 
-### 7.3 Sign-off Criteria
+### 12.3 Sign-off Criteria
 - All critical tests passed
 - No high-severity defects open
 - Performance meets requirements
@@ -574,7 +885,7 @@ KiddoTrack-Lite consists of:
 
 ---
 
-## 8. Conclusion
+## 13. Conclusion
 
 This system test plan ensures comprehensive validation of the KiddoTrack-Lite child safety monitoring system. The plan focuses on safety-critical functionality while covering all major system features and integration points.
 
