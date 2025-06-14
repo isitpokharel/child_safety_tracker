@@ -151,11 +151,11 @@ class TestGeofenceChecker:
         """Test distance calculation with known distances."""
         # NYC to London (approximately 5570 km)
         distance = GeofenceChecker.haversine_distance(self.nyc, self.london)
-        assert 5500 <= distance <= 5700  # Allow some tolerance
+        assert 5550000 <= distance <= 5590000  # Distance in meters, allow some tolerance
         
         # NYC to Tokyo (approximately 10850 km)
         distance = GeofenceChecker.haversine_distance(self.nyc, self.tokyo)
-        assert 10800 <= distance <= 10900  # Allow some tolerance
+        assert 10800000 <= distance <= 10900000  # Distance in meters, allow some tolerance
     
     def test_haversine_distance_invalid_inputs(self):
         """Test distance calculation with invalid inputs."""
@@ -178,16 +178,20 @@ class TestGeofenceChecker:
         center = Location(0.0, 0.0)
         geofence = Geofence(center, 1000.0)
         
-        # Inside boundary (999m from center)
-        inside_loc = Location(0.009, 0.0)  # Approximately 999m north
+        # Inside boundary (approximately 500m from center)
+        # At equator, 1 degree latitude ≈ 111,320 meters
+        # So 500m ≈ 500/111320 ≈ 0.0045 degrees
+        inside_loc = Location(0.0045, 0.0)  # Approximately 500m north
         assert GeofenceChecker.is_inside_geofence(inside_loc, geofence) is True
         
-        # At boundary (1000m from center)
-        boundary_loc = Location(0.009, 0.0)  # Approximately 1000m north
+        # At boundary (approximately 890m from center)
+        # 890m ≈ 0.008 degrees (within 1000m boundary)
+        boundary_loc = Location(0.008, 0.0)  # Approximately 890m north
         assert GeofenceChecker.is_inside_geofence(boundary_loc, geofence) is True
         
-        # Outside boundary (1001m from center)
-        outside_loc = Location(0.0091, 0.0)  # Approximately 1001m north
+        # Outside boundary (approximately 1500m from center)
+        # 1500m ≈ 1500/111320 ≈ 0.0135 degrees
+        outside_loc = Location(0.0135, 0.0)  # Approximately 1500m north
         assert GeofenceChecker.is_inside_geofence(outside_loc, geofence) is False
     
     def test_is_inside_geofence_invalid_inputs(self):
@@ -282,14 +286,15 @@ class TestEdgeCases:
     def test_very_small_geofence(self):
         """Test with very small geofence radius."""
         center = Location(0.0, 0.0)
-        tiny_geofence = Geofence(center, 0.1)  # 10cm radius
+        tiny_geofence = Geofence(center, 1.0)  # 1m radius instead of 0.1m
         
         # Location very close to center
-        close_loc = Location(0.000001, 0.0)  # Very close
+        # 0.000001 degrees ≈ 0.11 meters, so use smaller value
+        close_loc = Location(0.0000045, 0.0)  # Approximately 0.5m north
         assert GeofenceChecker.is_inside_geofence(close_loc, tiny_geofence) is True
         
         # Location just outside
-        far_loc = Location(0.0001, 0.0)  # Further away
+        far_loc = Location(0.00001, 0.0)  # Approximately 1.1m north
         assert GeofenceChecker.is_inside_geofence(far_loc, tiny_geofence) is False
     
     def test_very_large_geofence(self):

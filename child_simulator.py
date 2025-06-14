@@ -11,8 +11,8 @@ import time
 import random
 import signal
 import sys
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, timedelta
+from typing import Optional, Tuple, Dict, Any
 import httpx
 from rich.console import Console
 from rich.panel import Panel
@@ -27,6 +27,20 @@ from simulator import GPSSimulator, SimulatorConfig, EmergencyState
 from geofence import Location, Geofence, GeofenceChecker
 
 
+def check_location_safety(location: Location, geofence: Geofence) -> Tuple[bool, float]:
+    """
+    Check if a location is within the geofence.
+    
+    Args:
+        location: Current location to check
+        geofence: Geofence to check against
+        
+    Returns:
+        Tuple of (is_safe, distance_meters)
+    """
+    return geofence.check_location(location)
+
+
 class ChildSimulator:
     """Child device simulator with location tracking and panic functionality."""
     
@@ -39,18 +53,26 @@ class ChildSimulator:
         """
         self.api_url = api_url
         self.console = Console()
-        self.client = httpx.AsyncClient()
+        self.client = httpx.AsyncClient(timeout=5.0)
         
         # Initialize GPS simulator
-        config = SimulatorConfig()
+        config = SimulatorConfig(
+            home_latitude=40.7128,  # New York City
+            home_longitude=-74.0060,
+            update_frequency=1.0,
+            max_wander_distance=100.0,
+            panic_probability=0.01
+        )
         self.simulator = GPSSimulator(config)
         
         # State tracking
         self.is_running = False
         self.current_location: Optional[Location] = None
-        self.geofence: Optional[Geofence] = None
+        self.current_geofence: Optional[Geofence] = None
         self.emergency_state = EmergencyState.NORMAL
-        self.last_alert_time = 0
+        self.last_alert_time: float = 0  # Unix timestamp for compatibility
+        self.last_update_time: Optional[datetime] = None
+        self.alert_cooldown_seconds = 30
         
         # Add callbacks
         self.simulator.add_location_callback(self._on_location_update)
@@ -60,7 +82,17 @@ class ChildSimulator:
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
     
-    def _signal_handler(self, signum, frame):
+    @property
+    def geofence(self) -> Optional[Geofence]:
+        """Get current geofence (for backward compatibility)."""
+        return self.current_geofence
+    
+    @geofence.setter  
+    def geofence(self, value: Optional[Geofence]) -> None:
+        """Set current geofence (for backward compatibility)."""
+        self.current_geofence = value
+    
+    def _signal_handler(self, signum: int, frame: Any) -> None:
         """Handle shutdown signals."""
         self.console.print(f"\n[yellow]Received signal {signum}, shutting down...[/yellow]")
         self.is_running = False
@@ -119,6 +151,8 @@ class ChildSimulator:
                 # Update geofence status
                 if status_data.get("geofence_active"):
                     await self._update_geofence()
+                
+                self.last_update_time = datetime.now()
                     
         except Exception as e:
             self.console.print(f"[red]Error updating data: {e}[/red]")
@@ -131,7 +165,7 @@ class ChildSimulator:
                 geofence_data = response.json()
                 center_data = geofence_data["center"]
                 
-                self.geofence = Geofence(
+                self.current_geofence = Geofence(
                     center=Location(
                         latitude=center_data["latitude"],
                         longitude=center_data["longitude"]
@@ -147,13 +181,13 @@ class ChildSimulator:
         self.current_location = location
         
         # Check geofence if available
-        if self.geofence:
-            is_safe, distance = check_location_safety(location, self.geofence)
+        if self.current_geofence:
+            is_safe, distance = check_location_safety(location, self.current_geofence)
             
             if not is_safe:
                 # Prevent spam - only alert every 30 seconds
                 current_time = time.time()
-                if current_time - self.last_alert_time > 30:
+                if current_time - self.last_alert_time > self.alert_cooldown_seconds:
                     self.console.print(f"[yellow]WARNING: Left safe zone! Distance: {distance:.1f}m[/yellow]")
                     self.last_alert_time = current_time
     
@@ -232,120 +266,109 @@ class ChildSimulator:
         
         # Emergency indicator
         if self.emergency_state == EmergencyState.PANIC:
-            emergency_text = Text("!!! EMERGENCY - PANIC ACTIVE !!!", style="bold red on white")
+            status = Text("EMERGENCY - PANIC TRIGGERED", style="bold red")
         elif self.emergency_state == EmergencyState.RESOLVED:
-            emergency_text = Text("Emergency Resolved", style="bold green")
+            status = Text("Emergency Resolved", style="bold yellow")
         else:
-            emergency_text = Text("Normal Operation", style="bold green")
+            status = Text("Normal Operation", style="bold green")
         
         content = Align.center(
-            title + "\n" + subtitle + "\n" + emergency_text
+            Text.assemble(
+                title, "\n", subtitle, "\n", status
+            )
         )
         
-        return Panel(content, border_style="green", box=box.DOUBLE)
+        return Panel(
+            content,
+            border_style="green",
+            box=box.ROUNDED
+        )
     
     def _create_location(self) -> Panel:
         """Create the location panel."""
         if not self.current_location:
-            return Panel("No location data available", title="Current Location")
-        
-        table = Table(show_header=False, box=box.SIMPLE)
-        table.add_column("Property", style="bold")
-        table.add_column("Value")
-        
-        table.add_row("Latitude", f"{self.current_location.latitude:.6f}")
-        table.add_row("Longitude", f"{self.current_location.longitude:.6f}")
-        table.add_row("Timestamp", self.current_location.timestamp or "Unknown")
-        
-        # Add geofence status
-        if self.geofence:
-            is_safe, distance = check_location_safety(self.current_location, self.geofence)
-            status_icon = "[SAFE]" if is_safe else "[ALERT]"
-            status_text = "Safe" if is_safe else f"Outside ({distance:.0f}m)"
-            table.add_row("Geofence", f"{status_icon} {status_text}")
+            content = Text("No location data available", style="yellow")
         else:
-            table.add_row("Geofence", "Not configured")
+            table = Table.grid(padding=1)
+            table.add_row("Latitude:", f"{self.current_location.latitude:.6f}")
+            table.add_row("Longitude:", f"{self.current_location.longitude:.6f}")
+            table.add_row("Last Update:", self.current_location.timestamp)
+            
+            if self.current_geofence:
+                is_safe, distance = check_location_safety(self.current_location, self.current_geofence)
+                status = "Safe" if is_safe else f"Unsafe ({distance:.1f}m from safe zone)"
+                table.add_row("Geofence Status:", status)
+            
+            content = table
         
-        return Panel(table, title="Current Location", border_style="cyan")
+        return Panel(
+            content,
+            title="Location Data",
+            border_style="blue",
+            box=box.ROUNDED
+        )
     
     def _create_status(self) -> Panel:
         """Create the status panel."""
-        table = Table(show_header=False, box=box.SIMPLE)
-        table.add_column("Property", style="bold")
-        table.add_column("Value")
+        table = Table.grid(padding=1)
+        table.add_row("Device Status:", self.emergency_state.value.title())
+        table.add_row("Simulator:", "Running" if self.simulator.is_running else "Stopped")
+        table.add_row("Last Update:", self.last_update_time.strftime("%H:%M:%S") if self.last_update_time else "Never")
         
-        # GPS Status
-        gps_status = "[ACTIVE]" if self.simulator._running else "[INACTIVE]"
-        table.add_row("GPS Status", gps_status)
-        
-        # Emergency State
-        emergency_icon = {
-            EmergencyState.NORMAL: "[NORMAL]",
-            EmergencyState.PANIC: "[PANIC]",
-            EmergencyState.RESOLVED: "[RESOLVED]"
-        }.get(self.emergency_state, "[UNKNOWN]")
-        
-        table.add_row("Emergency", f"{emergency_icon} {self.emergency_state.value.upper()}")
-        
-        # Connection Status
-        connection_status = "[CONNECTED]" if self.is_running else "[DISCONNECTED]"
-        table.add_row("API Connection", connection_status)
-        
-        # Update Frequency
-        table.add_row("Update Rate", f"{self.simulator.config.update_frequency} Hz")
-        
-        return Panel(table, title="Device Status", border_style="yellow")
+        return Panel(
+            table,
+            title="Device Status",
+            border_style="blue",
+            box=box.ROUNDED
+        )
     
     def _create_controls(self) -> Panel:
         """Create the controls panel."""
-        controls_text = Text()
-        controls_text.append("Controls:\n\n", style="bold")
-        controls_text.append("• Ctrl+C: Exit\n", style="white")
-        controls_text.append("• p: Trigger Panic\n", style="red")
-        controls_text.append("• r: Resolve Panic\n", style="green")
-        controls_text.append("• API: ", style="white")
-        controls_text.append(f"{self.api_url}\n", style="blue")
+        table = Table.grid(padding=1)
+        table.add_row("[bold]Controls:[/bold]")
+        table.add_row("p - Trigger Panic")
+        table.add_row("r - Resolve Panic")
+        table.add_row("Ctrl+C - Exit")
         
-        # Add current state info
-        controls_text.append("\nCurrent State:\n", style="bold")
-        controls_text.append(f"• GPS: {'Running' if self.simulator._running else 'Stopped'}\n", 
-                           style="green" if self.simulator._running else "red")
-        controls_text.append(f"• Emergency: {self.emergency_state.value}\n", 
-                           style="red" if self.emergency_state == EmergencyState.PANIC else "green")
-        
-        return Panel(controls_text, title="Controls", border_style="magenta")
+        return Panel(
+            table,
+            title="Controls",
+            border_style="blue",
+            box=box.ROUNDED
+        )
     
     def _create_info(self) -> Panel:
         """Create the info panel."""
-        info_text = Text()
-        info_text.append("Device Info:\n\n", style="bold")
-        info_text.append("• Type: Child Simulator\n", style="white")
-        info_text.append("• Version: 1.0.0\n", style="white")
-        info_text.append("• Mode: GPS Tracking\n", style="white")
-        info_text.append("• Emergency: Enabled\n", style="white")
+        table = Table.grid(padding=1)
+        table.add_row("[bold]Device Info:[/bold]")
+        table.add_row("API URL:", self.api_url)
         
-        # Add geofence info
-        if self.geofence:
-            info_text.append(f"• Safe Zone: {self.geofence.radius_meters}m\n", style="white")
+        if self.current_geofence:
+            table.add_row("Geofence:", f"Active ({self.current_geofence.radius_meters:.0f}m radius)")
         else:
-            info_text.append("• Safe Zone: Not set\n", style="dim")
+            table.add_row("Geofence:", "Not set")
         
-        info_text.append("\nFeatures:\n", style="bold")
-        info_text.append("• Real-time GPS\n", style="white")
-        info_text.append("• Panic Button\n", style="white")
-        info_text.append("• Geofence Alerts\n", style="white")
-        info_text.append("• Emergency Mode\n", style="white")
-        
-        return Panel(info_text, title="Device Info", border_style="blue")
+        return Panel(
+            table,
+            title="Device Info",
+            border_style="blue",
+            box=box.ROUNDED
+        )
     
     def _create_footer(self) -> Panel:
         """Create the footer panel."""
-        footer_text = Text()
-        footer_text.append("KiddoTrack-Lite Child Simulator v1.0 | ", style="dim")
-        footer_text.append("CISC 593 - Software Verification & Validation | ", style="dim")
-        footer_text.append("Team: Vivek, Isit, Bhushan, Pooja", style="dim")
+        content = Text.assemble(
+            "KiddoTrack-Lite ",
+            Text("v1.0.0", style="dim"),
+            " | ",
+            Text("Child Simulator", style="italic")
+        )
         
-        return Panel(Align.center(footer_text), border_style="green")
+        return Panel(
+            Align.center(content),
+            border_style="green",
+            box=box.ROUNDED
+        )
 
 
 async def main():
@@ -355,7 +378,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    # Import helper function
-    from geofence import check_location_safety
-    
     asyncio.run(main()) 

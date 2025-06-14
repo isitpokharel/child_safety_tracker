@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Parent Console - Rich terminal UI for monitoring
-Author: Team KiddoTrack-Lite
+Author: Pooja Poudel
 Purpose: Parent monitoring interface with ASCII map and alerts
 """
 
