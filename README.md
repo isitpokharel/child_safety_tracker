@@ -10,7 +10,7 @@
 **Course:** CISC 593 — Software Verification & Validation  
 **Institution:** Harrisburg University  
 **Team:** Isit Pokharel, Bhushan Chandrakant, Pooja Poudel  
-**Date:** June 2025
+**Date:** June 13, 2025
 
 ---
 
@@ -576,13 +576,7 @@ git commit -m "Add new functionality with tests"
 git push origin feature/new-functionality
 ```
 
----
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
 
 ## Additional Resources
 
@@ -598,6 +592,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **CISC 593 - Software Verification & Validation**  
 **Harrisburg University**  
 **Team:** Isit Pokharel, Bhushan Chandrakant, Pooja Poudel  
-**Date:** June 2025
+**Date:** June 13, 2025
 
-For questions or support, please refer to the course materials or contact the development team. 
